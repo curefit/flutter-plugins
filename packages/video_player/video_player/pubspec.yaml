@@ -1,4 +1,4 @@
-name: video_player
+name: video_player_cf
 description: Flutter plugin for displaying inline video with other Flutter
   widgets on Android, iOS, and web.
 repository: https://github.com/flutter/plugins/tree/master/packages/video_player/video_player
@@ -13,18 +13,19 @@ flutter:
   plugin:
     platforms:
       android:
-        package: io.flutter.plugins.videoplayer
+        package: io.flutter.plugins.videoplayercf
         pluginClass: VideoPlayerPlugin
       ios:
-        pluginClass: FLTVideoPlayerPlugin
+        pluginClass: CFLTVideoPlayerPlugin
       web:
         default_package: video_player_web
 
 dependencies:
-  video_player_platform_interface: #^2.3.0
+  video_player_platform_interface_cf: #^2.3.0
 #    path: ../video_player_platform_interface
   # workaround for success build checks in PR
     git:
+      ref: e1830f5cb4fb3aee289d88f5c48d04fe6fac94b7
       url: git@github.com:curefit/flutter-plugins.git
       path: packages/video_player/video_player_platform_interface
   # The design on https://flutter.dev/go/federated-plugins was to leave
@@ -32,10 +33,11 @@ dependencies:
   # validation, so we set a ^ constraint.
   # TODO(amirh): Revisit this (either update this part in the  design or the pub tool).
   # https://github.com/flutter/flutter/issues/46264
-  video_player_web: #'>=0.1.5 <2.0.0'
+  video_player_web_cf: #'>=0.1.5 <2.0.0'
 #    path: ../video_player_web
     # workaround for success build checks in PR
     git:
+      ref: f51bbd641cd36040e6000fcec269dd27fb152168
       url: git@github.com:curefit/flutter-plugins.git
       path: packages/video_player/video_player_web
 

@@ -9,10 +9,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:meta/meta.dart';
-import 'package:video_player/src/closed_caption_file.dart';
-import 'package:video_player_platform_interface/video_player_platform_interface.dart';
+import 'package:video_player_cf/src/closed_caption_file.dart';
+import 'package:video_player_platform_interface_cf/video_player_platform_interface.dart';
 
-export 'package:video_player_platform_interface/video_player_platform_interface.dart'
+export 'package:video_player_platform_interface_cf/video_player_platform_interface.dart'
     show
         DurationRange,
         DataSourceType,

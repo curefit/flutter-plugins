@@ -13,7 +13,7 @@
 @implementation VideoPlayerTests
 
 - (void)testPlugin {
-  FLTVideoPlayerPlugin *plugin = [[FLTVideoPlayerPlugin alloc] init];
+  CFLTVideoPlayerPlugin *plugin = [[CFLTVideoPlayerPlugin alloc] init];
   XCTAssertNotNil(plugin);
 }
 
@@ -23,12 +23,12 @@
   NSObject<FlutterPluginRegistry> *registry =
       (NSObject<FlutterPluginRegistry> *)[[UIApplication sharedApplication] delegate];
   NSObject<FlutterPluginRegistrar> *registrar =
-      [registry registrarForPlugin:@"TEST_FLTVideoPlayerPlugin"];
+      [registry registrarForPlugin:@"TEST_CFLTVideoPlayerPlugin"];
   NSObject<FlutterPluginRegistrar> *partialRegistrar = OCMPartialMock(registrar);
   OCMStub([partialRegistrar textures]).andReturn(mockTextureRegistry);
-  [FLTVideoPlayerPlugin registerWithRegistrar:partialRegistrar];
-  FLTVideoPlayerPlugin<FLTVideoPlayerApi> *videoPlayerPlugin =
-      (FLTVideoPlayerPlugin<FLTVideoPlayerApi> *)[[FLTVideoPlayerPlugin alloc]
+  [CFLTVideoPlayerPlugin registerWithRegistrar:partialRegistrar];
+  CFLTVideoPlayerPlugin<FLTVideoPlayerApi> *videoPlayerPlugin =
+      (CFLTVideoPlayerPlugin<FLTVideoPlayerApi> *)[[CFLTVideoPlayerPlugin alloc]
           initWithRegistrar:partialRegistrar];
   FLTPositionMessage *message = [[FLTPositionMessage alloc] init];
   message.textureId = @101;

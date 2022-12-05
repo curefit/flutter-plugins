@@ -74,12 +74,12 @@ abstract class VideoPlayerApi {
 }
 
 void configurePigeon(PigeonOptions opts) {
-  opts.dartOut = '../video_player_platform_interface/lib/messages.dart';
-  opts.dartTestOut = '../video_player_platform_interface/lib/test.dart';
+  opts.dartOut = '../video_player_platform_interface_cf/lib/messages.dart';
+  opts.dartTestOut = '../video_player_platform_interface_cf/lib/test.dart';
   opts.objcHeaderOut = 'ios/Classes/messages.h';
   opts.objcSourceOut = 'ios/Classes/messages.m';
   opts.objcOptions.prefix = 'FLT';
   opts.javaOut =
       'android/src/main/java/io/flutter/plugins/videoplayer/Messages.java';
-  opts.javaOptions.package = 'io.flutter.plugins.videoplayer';
+  opts.javaOptions.package = 'io.flutter.plugins.videoplayercf';
 }

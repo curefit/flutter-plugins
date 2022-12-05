@@ -8,7 +8,7 @@
 /// video.
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
+import 'package:video_player_cf/video_player.dart';
 
 void main() {
   runApp(

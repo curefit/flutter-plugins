@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package io.flutter.plugins.videoplayer;
+package io.flutter.plugins.videoplayercf;
 
 import android.content.Context;
 import android.os.Build;
@@ -12,16 +12,16 @@ import io.flutter.Log;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.EventChannel;
-import io.flutter.plugins.videoplayer.Messages.CreateMessage;
-import io.flutter.plugins.videoplayer.Messages.InitializeMessage;
-import io.flutter.plugins.videoplayer.Messages.LoopingMessage;
-import io.flutter.plugins.videoplayer.Messages.MixWithOthersMessage;
-import io.flutter.plugins.videoplayer.Messages.PlaybackSpeedMessage;
-import io.flutter.plugins.videoplayer.Messages.PositionMessage;
-import io.flutter.plugins.videoplayer.Messages.TextureMessage;
-import io.flutter.plugins.videoplayer.Messages.VideoPlayerApi;
-import io.flutter.plugins.videoplayer.Messages.VolumeMessage;
-import io.flutter.plugins.videoplayer.Messages.DataSourceMessage;
+import io.flutter.plugins.videoplayercf.Messages.CreateMessage;
+import io.flutter.plugins.videoplayercf.Messages.InitializeMessage;
+import io.flutter.plugins.videoplayercf.Messages.LoopingMessage;
+import io.flutter.plugins.videoplayercf.Messages.MixWithOthersMessage;
+import io.flutter.plugins.videoplayercf.Messages.PlaybackSpeedMessage;
+import io.flutter.plugins.videoplayercf.Messages.PositionMessage;
+import io.flutter.plugins.videoplayercf.Messages.TextureMessage;
+import io.flutter.plugins.videoplayercf.Messages.VideoPlayerApi;
+import io.flutter.plugins.videoplayercf.Messages.VolumeMessage;
+import io.flutter.plugins.videoplayercf.Messages.DataSourceMessage;
 
 import io.flutter.view.TextureRegistry;
 import java.security.KeyManagementException;

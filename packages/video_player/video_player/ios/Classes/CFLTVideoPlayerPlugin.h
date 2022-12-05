@@ -4,6 +4,6 @@
 
 #import <Flutter/Flutter.h>
 
-@interface FLTVideoPlayerPlugin : NSObject <FlutterPlugin>
+@interface CFLTVideoPlayerPlugin : NSObject <FlutterPlugin>
 - (instancetype)initWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar;
 @end
