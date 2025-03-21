@@ -18,15 +18,11 @@ class VideoPlayer extends StatefulWidget {
 }
 
 class _VideoPlayerState extends State<VideoPlayer> {
-  late vp.VideoPlayerController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = vp.VideoPlayerController();
-    _controller.setNetworkDataSource(widget.url).then((value) {
-      setState(() {});
-    });
+
   }
 
   @override
@@ -43,10 +39,6 @@ class _VideoPlayerState extends State<VideoPlayer> {
                 ? AlignmentDirectional.bottomStart
                 : AlignmentDirectional.center,
             children: <Widget>[
-              AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: vp.VideoPlayer(_controller),
-              ),
               IconButton(
                 iconSize: _controller.value.isPlaying ? 24 : 60,
                 onPressed: () {

@@ -14,11 +14,6 @@ dependencies:
   flutter_parsed_text: ^2.2.1
   intl: ^0.18.0
   url_launcher: ^6.0.10
-  video_player_cf:
-    git:
-      ref: 9656e3ceae07a707b21f9997aa2c72261aa24c26
-      url: git@github.com:curefit/flutter-plugins.git
-      path: packages/video_player/video_player
 
 dev_dependencies:
   flutter_lints: ^1.0.4
