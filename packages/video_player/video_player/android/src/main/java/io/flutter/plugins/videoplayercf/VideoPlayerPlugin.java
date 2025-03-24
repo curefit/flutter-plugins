@@ -155,6 +155,15 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
     }
   }
 
+
+  private interface KeyForAssetFn {
+    String get(String asset);
+  }
+
+  private interface KeyForAssetAndPackageName {
+    String get(String asset, String packageName);
+  }
+
   private static final class FlutterState {
     private final Context applicationContext;
     private final BinaryMessenger binaryMessenger;

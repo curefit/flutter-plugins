@@ -28,34 +28,10 @@ class _VideoPlayerState extends State<VideoPlayer> {
   @override
   void dispose() {
     super.dispose();
-    _controller.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return _controller.value.isInitialized
-        ? Stack(
-            alignment: _controller.value.isPlaying
-                ? AlignmentDirectional.bottomStart
-                : AlignmentDirectional.center,
-            children: <Widget>[
-              IconButton(
-                iconSize: _controller.value.isPlaying ? 24 : 60,
-                onPressed: () {
-                  setState(() {
-                    _controller.value.isPlaying
-                        ? _controller.pause()
-                        : _controller.play();
-                  });
-                },
-                icon: Icon(
-                  _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-                  color: Colors.white,
-                  // size: 60,
-                ),
-              ),
-            ],
-          )
-        : Container();
+    return Container();
   }
 }
