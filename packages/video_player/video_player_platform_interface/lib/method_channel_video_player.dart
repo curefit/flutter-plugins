@@ -116,7 +116,7 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
       switch (map['event']) {
         case 'initialized':
           return VideoEvent(
-            key: map['key'],
+            key: map['key']?.toString() ?? '',
             eventType: VideoEventType.initialized,
             duration: Duration(milliseconds: map['duration']),
             size: Size(map['width']?.toDouble() ?? 0.0,
@@ -124,31 +124,31 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
           );
         case 'completed':
           return VideoEvent(
-            key: map['key'],
+            key: map['key']?.toString() ?? '',
             eventType: VideoEventType.completed,
           );
         case 'bufferingUpdate':
           final List<dynamic> values = map['values'];
 
           return VideoEvent(
-            key: map['key'],
+            key: map['key']?.toString() ?? '',
             buffered: values.map<DurationRange>(_toDurationRange).toList(),
             eventType: VideoEventType.bufferingUpdate,
           );
         case 'bufferingStart':
           return VideoEvent(
             eventType: VideoEventType.bufferingStart,
-            key: map['key'],
+            key: map['key']?.toString() ?? '',
           );
         case 'bufferingEnd':
           return VideoEvent(
             eventType: VideoEventType.bufferingEnd,
-            key: map['key'],
+            key: map['key']?.toString() ?? '',
           );
         default:
           return VideoEvent(
             eventType: VideoEventType.unknown,
-            key: map['key'],
+            key: map['key']?.toString() ?? '',
           );
       }
     });
