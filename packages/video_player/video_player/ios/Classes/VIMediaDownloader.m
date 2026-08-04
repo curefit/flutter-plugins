@@ -154,6 +154,9 @@ didCompleteWithError:(nullable NSError *)error {
 }
 
 - (void)cancel {
+    if (self.isCancelled) {
+        return;
+    }
     if (_session) {
         [self.session invalidateAndCancel];
     }
@@ -411,6 +414,8 @@ didCompleteWithError:(nullable NSError *)error {
     }
     
     NSArray *actions = [self.cacheWorker cachedDataActionsForRange:range];
+    self.actionWorker.delegate = nil;
+    [self.actionWorker cancel];
 
     self.actionWorker = [[VIActionWorker alloc] initWithActions:actions url:self.url cacheWorker:self.cacheWorker];
     self.actionWorker.canSaveToCache = self.saveToCache;
@@ -423,6 +428,8 @@ didCompleteWithError:(nullable NSError *)error {
     self.downloadToEnd = YES;
     NSRange range = NSMakeRange(0, 2);
     NSArray *actions = [self.cacheWorker cachedDataActionsForRange:range];
+    self.actionWorker.delegate = nil;
+    [self.actionWorker cancel];
 
     self.actionWorker = [[VIActionWorker alloc] initWithActions:actions url:self.url cacheWorker:self.cacheWorker];
     self.actionWorker.canSaveToCache = self.saveToCache;
@@ -431,6 +438,7 @@ didCompleteWithError:(nullable NSError *)error {
 }
 
 - (void)cancel {
+    self.downloadToEnd = NO;
     self.actionWorker.delegate = nil;
     [[VIMediaDownloaderStatus shared] removeURL:self.url];
     [self.actionWorker cancel];
@@ -476,12 +484,17 @@ didCompleteWithError:(nullable NSError *)error {
 }
 
 - (void)actionWorker:(VIActionWorker *)actionWorker didFinishWithError:(NSError *)error {
+    if (actionWorker != self.actionWorker) {
+        return;
+    }
     [[VIMediaDownloaderStatus shared] removeURL:self.url];
     
     if (!error && self.downloadToEnd) {
         self.downloadToEnd = NO;
+        self.actionWorker = nil;
         [self downloadTaskFromOffset:2 length:(NSUInteger)(self.cacheWorker.cacheConfiguration.contentInfo.contentLength - 2) toEnd:YES];
     } else {
+        self.actionWorker = nil;
         if ([self.delegate respondsToSelector:@selector(mediaDownloader:didFinishedWithError:)]) {
             [self.delegate mediaDownloader:self didFinishedWithError:error];
         }

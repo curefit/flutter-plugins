@@ -20,8 +20,8 @@ static NSString *kURLKey = @"kURLKey";
 
 @property (nonatomic, copy) NSString *filePath;
 @property (nonatomic, copy) NSString *fileName;
-@property (nonatomic, copy) NSArray<NSValue *> *internalCacheFragments;
-@property (nonatomic, copy) NSArray *downloadInfo;
+@property (nonatomic, strong) NSMutableArray<NSValue *> *internalCacheFragments;
+@property (nonatomic, strong) NSMutableArray<NSArray *> *downloadInfo;
 
 @end
 
@@ -44,22 +44,32 @@ static NSString *kURLKey = @"kURLKey";
     return [filePath stringByAppendingPathExtension:@"mt_cfg"];
 }
 
-- (NSArray<NSValue *> *)internalCacheFragments {
+- (NSMutableArray<NSValue *> *)internalCacheFragments {
     if (!_internalCacheFragments) {
-        _internalCacheFragments = [NSArray array];
+        @synchronized (self) {
+            if (!_internalCacheFragments) {
+                _internalCacheFragments = [NSMutableArray array];
+            }
+        }
     }
     return _internalCacheFragments;
 }
 
-- (NSArray *)downloadInfo {
+- (NSMutableArray<NSArray *> *)downloadInfo {
     if (!_downloadInfo) {
-        _downloadInfo = [NSArray array];
+        @synchronized (self) {
+            if (!_downloadInfo) {
+                _downloadInfo = [NSMutableArray array];
+            }
+        }
     }
     return _downloadInfo;
 }
 
 - (NSArray<NSValue *> *)cacheFragments {
-    return [_internalCacheFragments copy];
+    @synchronized (self) {
+        return [self.internalCacheFragments copy];
+    }
 }
 
 - (float)progress {
@@ -69,10 +79,9 @@ static NSString *kURLKey = @"kURLKey";
 
 - (long long)downloadedBytes {
     float bytes = 0;
-    @synchronized (self.internalCacheFragments) {
-        for (NSValue *range in self.internalCacheFragments) {
-            bytes += range.rangeValue.length;
-        }
+    NSArray<NSValue *> *fragments = [self cacheFragments];
+    for (NSValue *range in fragments) {
+        bytes += range.rangeValue.length;
     }
     return bytes;
 }
@@ -80,11 +89,13 @@ static NSString *kURLKey = @"kURLKey";
 - (float)downloadSpeed {
     long long bytes = 0;
     NSTimeInterval time = 0;
-    @synchronized (self.downloadInfo) {
-        for (NSArray *a in self.downloadInfo) {
-            bytes += [[a firstObject] longLongValue];
-            time += [[a lastObject] doubleValue];
-        }
+    NSArray<NSArray *> *downloadInfo = nil;
+    @synchronized (self) {
+        downloadInfo = [self.downloadInfo copy];
+    }
+    for (NSArray *a in downloadInfo) {
+        bytes += [[a firstObject] longLongValue];
+        time += [[a lastObject] doubleValue];
     }
     return bytes / 1024.0 / time;
 }
@@ -93,8 +104,10 @@ static NSString *kURLKey = @"kURLKey";
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     [aCoder encodeObject:self.fileName forKey:kFileNameKey];
-    [aCoder encodeObject:self.internalCacheFragments forKey:kCacheFragmentsKey];
-    [aCoder encodeObject:self.downloadInfo forKey:kDownloadInfoKey];
+    @synchronized (self) {
+        [aCoder encodeObject:[self.internalCacheFragments copy] forKey:kCacheFragmentsKey];
+        [aCoder encodeObject:[self.downloadInfo copy] forKey:kDownloadInfoKey];
+    }
     [aCoder encodeObject:self.contentInfo forKey:kContentInfoKey];
     [aCoder encodeObject:self.url forKey:kURLKey];
 }
@@ -105,9 +118,12 @@ static NSString *kURLKey = @"kURLKey";
         _fileName = [aDecoder decodeObjectForKey:kFileNameKey];
         _internalCacheFragments = [[aDecoder decodeObjectForKey:kCacheFragmentsKey] mutableCopy];
         if (!_internalCacheFragments) {
-            _internalCacheFragments = [NSArray array];
+            _internalCacheFragments = [NSMutableArray array];
         }
-        _downloadInfo = [aDecoder decodeObjectForKey:kDownloadInfoKey];
+        _downloadInfo = [[aDecoder decodeObjectForKey:kDownloadInfoKey] mutableCopy];
+        if (!_downloadInfo) {
+            _downloadInfo = [NSMutableArray array];
+        }
         _contentInfo = [aDecoder decodeObjectForKey:kContentInfoKey];
         _url = [aDecoder decodeObjectForKey:kURLKey];
     }
@@ -120,8 +136,10 @@ static NSString *kURLKey = @"kURLKey";
     VICacheConfiguration *configuration = [[VICacheConfiguration allocWithZone:zone] init];
     configuration.fileName = self.fileName;
     configuration.filePath = self.filePath;
-    configuration.internalCacheFragments = self.internalCacheFragments;
-    configuration.downloadInfo = self.downloadInfo;
+    @synchronized (self) {
+        configuration.internalCacheFragments = [self.internalCacheFragments mutableCopy];
+        configuration.downloadInfo = [self.downloadInfo mutableCopy];
+    }
     configuration.url = self.url;
     configuration.contentInfo = self.contentInfo;
     
@@ -136,7 +154,7 @@ static NSString *kURLKey = @"kURLKey";
 }
 
 - (void)archiveData {
-    @synchronized (self.internalCacheFragments) {
+    @synchronized (self) {
         [NSKeyedArchiver archiveRootObject:self toFile:self.filePath];
     }
 }
@@ -146,11 +164,11 @@ static NSString *kURLKey = @"kURLKey";
         return;
     }
     
-    @synchronized (self.internalCacheFragments) {
-        NSMutableArray *internalCacheFragments = [self.internalCacheFragments mutableCopy];
+    @synchronized (self) {
+        NSMutableArray<NSValue *> *internalCacheFragments = self.internalCacheFragments;
         
         NSValue *fragmentValue = [NSValue valueWithRange:fragment];
-        NSInteger count = self.internalCacheFragments.count;
+        NSInteger count = internalCacheFragments.count;
         if (count == 0) {
             [internalCacheFragments addObject:fragmentValue];
         } else {
@@ -172,15 +190,15 @@ static NSString *kURLKey = @"kURLKey";
             }];
             
             if (indexSet.count > 1) {
-                NSRange firstRange = self.internalCacheFragments[indexSet.firstIndex].rangeValue;
-                NSRange lastRange = self.internalCacheFragments[indexSet.lastIndex].rangeValue;
+                NSRange firstRange = internalCacheFragments[indexSet.firstIndex].rangeValue;
+                NSRange lastRange = internalCacheFragments[indexSet.lastIndex].rangeValue;
                 NSInteger location = MIN(firstRange.location, fragment.location);
                 NSInteger endOffset = MAX(lastRange.location + lastRange.length, fragment.location + fragment.length);
                 NSRange combineRange = NSMakeRange(location, endOffset - location);
                 [internalCacheFragments removeObjectsAtIndexes:indexSet];
                 [internalCacheFragments insertObject:[NSValue valueWithRange:combineRange] atIndex:indexSet.firstIndex];
             } else if (indexSet.count == 1) {
-                NSRange firstRange = self.internalCacheFragments[indexSet.firstIndex].rangeValue;
+                NSRange firstRange = internalCacheFragments[indexSet.firstIndex].rangeValue;
                 
                 NSRange expandFirstRange = NSMakeRange(firstRange.location, firstRange.length + 1);
                 NSRange expandFragmentRange = NSMakeRange(fragment.location, fragment.length + 1);
@@ -200,14 +218,12 @@ static NSString *kURLKey = @"kURLKey";
                 }
             }
         }
-        
-        self.internalCacheFragments = [internalCacheFragments copy];
     }
 }
 
 - (void)addDownloadedBytes:(long long)bytes spent:(NSTimeInterval)time {
-    @synchronized (self.downloadInfo) {
-        self.downloadInfo = [self.downloadInfo arrayByAddingObject:@[@(bytes), @(time)]];
+    @synchronized (self) {
+        [self.downloadInfo addObject:@[@(bytes), @(time)]];
     }
 }
 
