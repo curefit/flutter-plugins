@@ -352,11 +352,24 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     switch (item.status) {
       case AVPlayerItemStatusFailed:
         if (_eventSink != nil) {
+          NSError* playerError = item.error;
+          NSError* underlyingError =
+              [playerError.userInfo objectForKey:NSUnderlyingErrorKey];
+          NSDictionary* details = @{
+            @"domain" : playerError.domain ?: @"",
+            @"code" : @(playerError.code),
+            @"description" : playerError.localizedDescription ?: @"",
+            @"failureReason" : playerError.localizedFailureReason ?: @"",
+            @"recoverySuggestion" : playerError.localizedRecoverySuggestion ?: @"",
+            @"underlyingDomain" : underlyingError.domain ?: @"",
+            @"underlyingCode" : @(underlyingError.code),
+            @"underlyingDescription" : underlyingError.localizedDescription ?: @"",
+          };
           _eventSink([FlutterError
               errorWithCode:@"VideoError"
                     message:[@"Failed to load video: "
-                                stringByAppendingString:[item.error localizedDescription]]
-                    details:nil]);
+                                stringByAppendingString:(playerError.localizedDescription ?: @"")]
+                    details:details]);
         }
         break;
       case AVPlayerItemStatusUnknown:
