@@ -786,14 +786,15 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
       }
         [player setDataSourceAsset:assetPath withKey:input.key];
     } else if (input.uri) {
+      NSURL* url = [NSURL URLWithString:input.uri];
       BOOL useCache = input.useCache;
-      BOOL enableCache = _maxCacheSize > 0 && _maxCacheFileSize > 0 && useCache;
+      BOOL enableCache = !url.isFileURL && _maxCacheSize > 0 && _maxCacheFileSize > 0 && useCache;
         if (enableCache) {
-            [player setDataSourceURL:[NSURL URLWithString:input.uri]
+            [player setDataSourceURL:url
                                            withKey:input.key
                          withResourceLoaderManager:[CFLTVideoPlayer resourceLoaderManager]];
         } else {
-            [player setDataSourceURL:[NSURL URLWithString:input.uri] withKey:input.key];
+            [player setDataSourceURL:url withKey:input.key];
         }
     } else {
         *error = [FlutterError errorWithCode:@"video_player" message:@"not implemented" details:nil];
