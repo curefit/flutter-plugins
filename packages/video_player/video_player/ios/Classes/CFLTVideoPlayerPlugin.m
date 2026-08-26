@@ -138,17 +138,6 @@ static inline int64_t CFLTCMTimeToMillis(CMTime time) {
   return time.value * 1000 / time.timescale;
 }
 
-static inline CGFloat radiansToDegrees(CGFloat radians) {
-  // Input range [-pi, pi] or [-180, 180]
-  CGFloat degrees = GLKMathRadiansToDegrees((float)radians);
-  if (degrees < 0) {
-    // Convert -90 to 270 and -180 to 180
-    return degrees + 360;
-  }
-  // Output degrees in between [0, 360[
-  return degrees;
-};
-
 - (AVMutableVideoComposition*)getVideoCompositionWithTransform:(CGAffineTransform)transform
                                                      withAsset:(AVAsset*)asset
                                                 withVideoTrack:(AVAssetTrack*)videoTrack {
@@ -158,22 +147,15 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   AVMutableVideoCompositionLayerInstruction* layerInstruction =
       [AVMutableVideoCompositionLayerInstruction
           videoCompositionLayerInstructionWithAssetTrack:videoTrack];
-  [layerInstruction setTransform:_preferredTransform atTime:kCMTimeZero];
+  [layerInstruction setTransform:transform atTime:kCMTimeZero];
 
   AVMutableVideoComposition* videoComposition = [AVMutableVideoComposition videoComposition];
   instruction.layerInstructions = @[ layerInstruction ];
   videoComposition.instructions = @[ instruction ];
 
-  // If in portrait mode, switch the width and height of the video
-  CGFloat width = videoTrack.naturalSize.width;
-  CGFloat height = videoTrack.naturalSize.height;
-  NSInteger rotationDegrees =
-      (NSInteger)round(radiansToDegrees(atan2(_preferredTransform.b, _preferredTransform.a)));
-  if (rotationDegrees == 90 || rotationDegrees == 270) {
-    width = videoTrack.naturalSize.height;
-    height = videoTrack.naturalSize.width;
-  }
-  videoComposition.renderSize = CGSizeMake(width, height);
+  CGRect transformedRect = CGRectApplyAffineTransform(
+      CGRectMake(0, 0, videoTrack.naturalSize.width, videoTrack.naturalSize.height), transform);
+  videoComposition.renderSize = transformedRect.size;
 
   // TODO(@recastrodiaz): should we use videoTrack.nominalFrameRate ?
   // Currently set at a constant 30 FPS
@@ -259,24 +241,10 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 
 - (CGAffineTransform)fixTransform:(AVAssetTrack*)videoTrack {
   CGAffineTransform transform = videoTrack.preferredTransform;
-  // TODO(@recastrodiaz): why do we need to do this? Why is the preferredTransform incorrect?
-  // At least 2 user videos show a black screen when in portrait mode if we directly use the
-  // videoTrack.preferredTransform Setting tx to the height of the video instead of 0, properly
-  // displays the video https://github.com/flutter/flutter/issues/17606#issuecomment-413473181
-  if (transform.tx == 0 && transform.ty == 0) {
-    NSInteger rotationDegrees = (NSInteger)round(radiansToDegrees(atan2(transform.b, transform.a)));
-    NSLog(@"TX and TY are 0. Rotation: %ld. Natural width,height: %f, %f", (long)rotationDegrees,
-          videoTrack.naturalSize.width, videoTrack.naturalSize.height);
-    if (rotationDegrees == 90) {
-      NSLog(@"Setting transform tx");
-      transform.tx = videoTrack.naturalSize.height;
-      transform.ty = 0;
-    } else if (rotationDegrees == 270) {
-      NSLog(@"Setting transform ty");
-      transform.tx = 0;
-      transform.ty = videoTrack.naturalSize.width;
-    }
-  }
+  CGRect transformedRect = CGRectApplyAffineTransform(
+      CGRectMake(0, 0, videoTrack.naturalSize.width, videoTrack.naturalSize.height), transform);
+  transform.tx -= CGRectGetMinX(transformedRect);
+  transform.ty -= CGRectGetMinY(transformedRect);
   return transform;
 }
 
